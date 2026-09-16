@@ -1,0 +1,32 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Secrets / local config
+.env
+!.env.example
+
+# Logs
+*.log
+
+# Raw data corpus -- NHTSA data is ~65MB across 288 files and easy to
+# re-fetch (public API, free); MechanicDB is small enough to keep.
+# See README for how to regenerate: scripts/fetch_nhtsa_data.py
+data/raw/nhtsa/
+
+# Vector store -- rebuilt by running the notebook; large (chroma.sqlite3
+# alone is ~50MB for 6.7k chunks). See README for how to regenerate.
+# backend/data/vector_store is a COPY of the root one (see README Setup step 1)
+# -- both are gitignored, neither should be committed.
+data/vector_store/
+backend/data/vector_store/
+data/eval_results.csv
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

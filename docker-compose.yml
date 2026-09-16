@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Use host.docker.internal to connect to Ollama running on your Windows host
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - CORS_ALLOW_ORIGINS=http://localhost:8501
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      # Connect to the backend container internally
+      - API_BASE_URL=http://backend:8000
+    depends_on:
+      - backend
