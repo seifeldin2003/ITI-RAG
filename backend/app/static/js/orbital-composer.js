@@ -1,4 +1,4 @@
-﻿// --- Three.js Kinetic Orbitals with Push & Catch Cursor Interaction ---
+// --- Three.js Kinetic Orbitals with Push & Catch Cursor Interaction ---
 (function() {
   const container = document.getElementById('threejs-container');
   if (!container || typeof THREE === 'undefined') return;
@@ -63,10 +63,12 @@
   
   let collisionTime = 100.0;
   let mouseXNormalized = 0;
+  let mouseYNormalized = 0;
   let isCatching = false;
 
   window.addEventListener('mousemove', (e) => {
     mouseXNormalized = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseYNormalized = (e.clientY / window.innerHeight - 0.5) * 2;
   });
 
   window.addEventListener('mousedown', () => { isCatching = true; });
@@ -76,10 +78,11 @@
     requestAnimationFrame(animate);
     collisionTime += 0.016;
     
-    const isColliding = (collisionTime < 1.2);
+    const isColliding = (collisionTime < 1.4);
     
-    // Group tilt following cursor
-    group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, mouseXNormalized * 0.2, 0.05);
+    // Group 3D tilt following cursor position
+    group.rotation.y = THREE.MathUtils.lerp(group.rotation.y, mouseXNormalized * 0.35, 0.06);
+    group.rotation.x = THREE.MathUtils.lerp(group.rotation.x, mouseYNormalized * 0.15, 0.06);
 
     paths.forEach((p, i) => {
       p.mesh.rotation.z += p.speed * p.direction;

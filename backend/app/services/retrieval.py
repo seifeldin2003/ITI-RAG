@@ -48,15 +48,19 @@ class RetrievalService:
 
     def retrieve(self, question: str, k: int | None = None) -> list[Document]:
         k = k or settings.retrieval_k
-        search_kwargs = {"k": k}
         
         import re
         match = re.search(r'\b([PBUC]\d{4})\b', question, re.IGNORECASE)
         if match:
             dtc = match.group(1).upper()
-            search_kwargs["filter"] = {"record_id": {"$contains": dtc}}
+            try:
+                # In Chroma, exact metadata match is {"component": dtc}
+                dtc_docs = self.vectordb.as_retriever(
+                    search_kwargs={"k": k, "filter": {"component": dtc}}
+                ).invoke(question)
+                if dtc_docs and len(dtc_docs) > 0:
+                    return dtc_docs
+            except Exception:
+                pass
             
-        try:
-            return self.vectordb.as_retriever(search_kwargs=search_kwargs).invoke(question)
-        except Exception:
-            return self.vectordb.as_retriever(search_kwargs={"k": k}).invoke(question)
+        return self.vectordb.as_retriever(search_kwargs={"k": k}).invoke(question)

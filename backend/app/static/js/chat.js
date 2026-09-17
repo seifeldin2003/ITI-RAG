@@ -1,4 +1,4 @@
-﻿// --- AutoDiag Chat Engine — Automotive Diagnostic RAG Assistant ---
+// --- AutoDiag Chat Engine — Automotive Diagnostic RAG Assistant ---
 document.addEventListener('DOMContentLoaded', () => {
   const chatScrollArea = document.getElementById('chat-scroll-area');
   const chatForm = document.getElementById('chat-form');
@@ -58,15 +58,75 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(() => { chatScrollArea.scrollTop = chatScrollArea.scrollHeight; });
   }
 
+  const screenFlash = document.getElementById('screen-color-flash');
+
+  function spawnSquashParticles(x, y) {
+    const colors = ['#00F5FF', '#F5C869', '#FF5C00', '#FF007A', '#FFFFFF', '#38BDF8'];
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'squash-particle';
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const size = Math.random() * 8 + 4;
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+      const dist = Math.random() * 130 + 40;
+      const dx = Math.cos(angle) * dist + 'px';
+      const dy = (Math.sin(angle) * dist - Math.random() * 50) + 'px';
+
+      p.style.left = (x - size / 2) + 'px';
+      p.style.top = (y - size / 2) + 'px';
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.color = color;
+      p.style.backgroundColor = color;
+      p.style.setProperty('--dx', dx);
+      p.style.setProperty('--dy', dy);
+      p.style.boxShadow = `0 0 ${size * 2.2}px ${color}`;
+
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 900);
+    }
+  }
+
   function triggerSubmitSquash() {
     playHapticChime();
+
+    // 1. Diagnose button squash & spring physics
+    if (sendBtn) {
+      sendBtn.classList.remove('squash-burst');
+      void sendBtn.offsetWidth;
+      sendBtn.classList.add('squash-burst');
+      setTimeout(() => sendBtn.classList.remove('squash-burst'), 880);
+    }
+
+    // 2. Fullscreen squash color flash
+    if (screenFlash) {
+      screenFlash.classList.remove('active');
+      void screenFlash.offsetWidth;
+      screenFlash.classList.add('active');
+      setTimeout(() => screenFlash.classList.remove('active'), 900);
+    }
+
+    // 3. Composer frame squash
     if (streamFrame) {
       streamFrame.classList.remove('color-squashing');
       void streamFrame.offsetWidth;
       streamFrame.classList.add('color-squashing');
-      setTimeout(() => streamFrame.classList.remove('color-squashing'), 720);
+      setTimeout(() => streamFrame.classList.remove('color-squashing'), 880);
     }
-    if (window.triggerSmashWebGL) window.triggerSmashWebGL();
+
+    // 4. Particle sparks originating from Diagnose button
+    let btnX = window.innerWidth * 0.7;
+    let btnY = window.innerHeight - 80;
+    if (sendBtn) {
+      const rect = sendBtn.getBoundingClientRect();
+      btnX = rect.left + rect.width / 2;
+      btnY = rect.top + rect.height / 2;
+    }
+    spawnSquashParticles(btnX, btnY);
+
+    // 5. WebGL shockwave originating from button location
+    if (window.triggerSmashWebGL) window.triggerSmashWebGL(btnX, btnY);
     if (window.triggerSmashThreeJS) window.triggerSmashThreeJS();
   }
 

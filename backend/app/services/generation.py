@@ -7,16 +7,23 @@ from langchain_ollama import OllamaLLM
 
 from app.core.config import settings
 
-TEMPLATE = """You are an automotive diagnostic assistant. Answer the question using ONLY the context below, which comes from real NHTSA recall/complaint records and mechanic-authored DTC references.
-Do NOT use outside knowledge. Do NOT guess or suggest causes that are not explicitly in the context. If the context does not contain the answer or any related helpful information, say exactly: "I don't have information about that in my records."
-Always cite the source ID(s) you used in your answer.
+TEMPLATE = """You are AutoDiag, an intelligent automotive diagnostic assistant. Your goal is to provide helpful, actionable, and accurate diagnostic analysis using the provided real NHTSA recall/complaint records and mechanic repair references.
+
+Instructions:
+1. Ground your response in the provided records. Analyze reported vehicle issues, affected components, recurring defect patterns, and mechanic repair recommendations.
+2. Directly cite the source IDs in your explanation (e.g. [NHTSA Complaint #...], [NHTSA Recall #...], or [MechanicDB ...]).
+3. Structure your response clearly:
+   - Reported Symptoms & Issues: Summarize what owners and records describe for this vehicle or symptom.
+   - Probable Mechanical Causes: Detail component failures or system issues identified in the records.
+   - Actionable Next Steps: Provide practical recommendations (e.g. OBD-II scan, checking fluid levels/pressure, inspecting specific wiring or parts).
+4. Only state that you lack information if the provided context is completely unrelated to the vehicle or issue.
 
 Context:
 {context}
 
 Question: {question}
 
-Answer (with citation):"""
+Diagnostic Analysis & Findings:"""
 
 _prompt = PromptTemplate.from_template(TEMPLATE)
 
@@ -26,11 +33,17 @@ class GenerationService:
         self.llm = OllamaLLM(
             model=settings.ollama_model,
             base_url=settings.ollama_base_url,
-            temperature=0.1,
+            temperature=0.2,
         )
 
     def generate(self, question: str, docs: list[Document]) -> str:
-        # Format the source IDs to be more understandable to the user
+        if not docs:
+            return (
+                "I don't have matching records for this specific query in the current database. "
+                "Please try specifying the vehicle make, model, model year, or OBD-II DTC code (e.g., P0300)."
+            )
+
+        # Format the source IDs to be clear and citeable
         formatted_docs = []
         for d in docs:
             rec_id = str(d.metadata.get('record_id', '?'))
