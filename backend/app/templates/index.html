@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AutoDiag — Intelligent Automotive Diagnostic Assistant</title>
+  <meta name="description" content="AI-powered automotive diagnostic assistant grounded in real NHTSA recall and complaint records. Ask about any vehicle problem and get cited, verified answers."/>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/css/autodiag.css"/>
+</head>
+<body>
+  <!-- WebGL Fluid Background -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Atmospheric Ambient Lighting -->
+  <div class="atmospheric-overlay"></div>
+
+  <!-- Film Grain Texture -->
+  <div class="film-grain"></div>
+
+  <!-- App Shell -->
+  <div class="app-container">
+
+    <!-- Minimal Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-mark">
+        <div class="brand-vert-name">AUTODIAG</div>
+      </div>
+
+      <ul class="nav-links">
+        <li>
+          <button class="nav-item-btn active" title="Diagnostic Chat" aria-label="Chat" id="nav-chat-btn">
+            <span class="material-symbols-outlined">chat_bubble</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-item-btn" id="clear-chat-btn" title="New Session" aria-label="New Session">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+        </li>
+        <li>
+          <a href="/docs" target="_blank" class="nav-item-btn" title="API Docs" aria-label="API Documentation">
+            <span class="material-symbols-outlined">terminal</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-status-beacon" title="System Status"></div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-arena">
+
+      <!-- Top Navigation Bar -->
+      <header class="top-nav">
+        <div class="brand-badge">
+          <span class="logo-wordmark">AUTODIAG</span>
+          <div class="badge-pill" id="status-pill">
+            <div class="status-ping" id="status-ping"></div>
+            <span id="status-text">Connecting...</span>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <span class="chunks-badge" id="chunks-badge" style="display:none;">
+            <span class="material-symbols-outlined" style="font-size:13px;">database</span>
+            Indexing...
+          </span>
+          <button class="action-pill-btn" id="new-session-btn" onclick="document.getElementById('clear-chat-btn').click()">
+            <span class="material-symbols-outlined" style="font-size:14px;">add</span>
+            <span>New Chat</span>
+          </button>
+          <a href="/docs" target="_blank" class="action-pill-btn">
+            <span class="material-symbols-outlined" style="font-size:14px;">code</span>
+            <span>API Docs</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Chat Scroll Area -->
+      <section class="chat-scroll-area" id="chat-scroll-area">
+
+        <!-- Hero Splash Screen -->
+        <div class="hero-splash" id="hero-splash">
+          <div class="hero-eyebrow">
+            <span class="material-symbols-outlined" style="font-size:13px;">directions_car</span>
+            NHTSA-Grounded Diagnostic Intelligence
+          </div>
+
+          <h1 class="hero-title">
+            DIAGNOSE YOUR CAR,<br/>
+            <span class="gradient-word">BACKED BY REAL DATA</span>
+          </h1>
+
+          <p class="hero-description">
+            Ask about any vehicle problem — from warning lights to strange noises. Answers are grounded in verified NHTSA recall &amp; complaint records and cited DTC references. Always confirm safety-critical repairs with a qualified mechanic.
+          </p>
+
+          <!-- Suggestion Cards -->
+          <div class="suggestion-grid">
+
+            <div class="suggestion-card" data-prompt="My BMW X5 check engine light is on and it's shaking at idle. What could be wrong?" id="suggestion-bmw">
+              <div class="card-header">
+                <div class="card-icon-wrap">
+                  <span class="material-symbols-outlined" style="font-size:15px;">warning</span>
+                </div>
+                <span class="card-topic">Check Engine</span>
+              </div>
+              <div class="card-title">BMW X5 check engine light + rough idle — what could be wrong?</div>
+            </div>
+
+            <div class="suggestion-card" data-prompt="What are the most common Toyota Camry transmission problems from 2018-2020?" id="suggestion-camry">
+              <div class="card-header">
+                <div class="card-icon-wrap">
+                  <span class="material-symbols-outlined" style="font-size:15px;">settings_input_component</span>
+                </div>
+                <span class="card-topic">Transmission</span>
+              </div>
+              <div class="card-title">Common Toyota Camry transmission problems (2018–2020)?</div>
+            </div>
+
+            <div class="suggestion-card" data-prompt="Are there any recalls on the 2019 Ford F-150 related to brakes or safety systems?" id="suggestion-f150">
+              <div class="card-header">
+                <div class="card-icon-wrap">
+                  <span class="material-symbols-outlined" style="font-size:15px;">notifications_active</span>
+                </div>
+                <span class="card-topic">Recall Lookup</span>
+              </div>
+              <div class="card-title">NHTSA recalls on 2019 Ford F-150 brake or safety issues?</div>
+            </div>
+
+            <div class="suggestion-card" data-prompt="My Honda Accord 2020 makes a clicking noise when turning. Is this a known issue?" id="suggestion-accord">
+              <div class="card-header">
+                <div class="card-icon-wrap">
+                  <span class="material-symbols-outlined" style="font-size:15px;">hearing</span>
+                </div>
+                <span class="card-topic">Noise Diagnosis</span>
+              </div>
+              <div class="card-title">Honda Accord 2020 clicking noise when turning — known issue?</div>
+            </div>
+
+            <div class="suggestion-card" data-prompt="What does error code P0300 mean and what should I do?" id="suggestion-dtc">
+              <div class="card-header">
+                <div class="card-icon-wrap" style="color:var(--liquid-gold);">
+                  <span class="material-symbols-outlined" style="font-size:15px;">code</span>
+                </div>
+                <span class="card-topic" style="color:var(--liquid-gold);">DTC Code</span>
+              </div>
+              <div class="card-title">What does OBD error code P0300 mean?</div>
+            </div>
+
+            <div class="suggestion-card" data-prompt="My Chevrolet Silverado 2021 has sudden power loss on the highway. Any NHTSA complaints about this?" id="suggestion-silverado">
+              <div class="card-header">
+                <div class="card-icon-wrap" style="color:var(--orange);">
+                  <span class="material-symbols-outlined" style="font-size:15px;">electric_bolt</span>
+                </div>
+                <span class="card-topic" style="color:var(--orange);">Power Loss</span>
+              </div>
+              <div class="card-title">Chevy Silverado 2021 sudden power loss — NHTSA complaints?</div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Composer Dock (Fixed Bottom Input) -->
+      <footer class="composer-dock">
+        <!-- Three.js Orbital Rings -->
+        <div id="threejs-container"></div>
+
+        <!-- Input Area -->
+        <div class="composer-wrap">
+          <div class="border-stream-frame" id="border-stream-frame">
+            <div class="center-vanish-node"></div>
+
+            <div class="composer-inner-box">
+              <form id="chat-form" style="display:flex; width:100%; align-items:center; gap:12px;">
+                <input
+                  type="text"
+                  id="message-input"
+                  class="composer-input"
+                  placeholder="e.g. My BMW X6 won't go into drive mode — any recalls?"
+                  autocomplete="off"
+                  autofocus
+                />
+                <button type="submit" class="modern-submit-btn" id="send-trigger-btn">
+                  <span>Diagnose</span>
+                  <span class="material-symbols-outlined" style="font-size:15px;">arrow_upward</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Footer Note -->
+          <div class="composer-footnote">
+            <span>Llama 3.2 · ChromaDB · NHTSA Recall &amp; Complaint Records</span>
+            <div class="footnote-engine">
+              <div class="engine-glow-dot"></div>
+              <span>6,195 Verified Knowledge Chunks</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/shader-bg.js"></script>
+  <script src="/static/js/orbital-composer.js"></script>
+  <script src="/static/js/chat.js"></script>
+</body>
+</html>

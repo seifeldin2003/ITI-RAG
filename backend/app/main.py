@@ -1,13 +1,18 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes.query import router as query_router
 from app.core.config import settings
 from app.services.generation import GenerationService
 from app.services.retrieval import RetrievalService
 from app.utils.logging_config import configure_logging
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 @asynccontextmanager
@@ -32,5 +37,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static assets (CSS, JS)
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(_HERE, "static")),
+    name="static",
+)
+
+
+@app.get("/", response_class=FileResponse, include_in_schema=False)
+async def serve_frontend():
+    """Serve the AutoDiag web frontend."""
+    return FileResponse(os.path.join(_HERE, "templates", "index.html"), media_type="text/html")
+
 
 app.include_router(query_router)
